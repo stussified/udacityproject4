@@ -20,15 +20,16 @@ class Game(ndb.Model):
 	streak = ndb.IntegerProperty(required=True, default=0)
 	first_random_number = ndb.IntegerProperty(required=True)
 	second_random_number = ndb.IntegerProperty(required=True)
-
+	third_random_number = ndb.IntegerProperty(required=True)
 	# Class methods require class to be passed as the first object. 
 	# Means you can reuse them depending on the value inside of the class instantiating this function.
 	@classmethod 
-	def new_game(cls, user, streak, max, first_random_number, second_random_number):
+	def new_game(cls, user, streak, max, first_random_number, second_random_number, third_random_number):
 		# Create a new game.  The order of the 2 numbers don't matter, so we're not going to worry about it.
 		game = Game(user=user, 
 					first_random_number = random.choice(range(1, max+1)),  # max + 1 because of computer counting.
 					second_random_number = random.choice(range(1, max+1)),
+					third_random_number=random.choice(range(1, max+1)),
 					streak = 0,
 					game_over = False)
 		game.put
@@ -62,8 +63,8 @@ class Score(ndb.Model):
 		return ScoreForm(user_name=self.user.get().name, max_streak=self.max_streak,
 			date=str(self.date))
 
-"""Here are the forms section - they're the protorpc fields that API endpoints will be using to send info.
-The reason this exists is because Google App Engine requires info sent messages inside of 
+"""Here are the forms section - they're the protorpc fields that API endpoints will be using to send and 
+recieve info.  The reason this exists is because Google App Engine requires info sent messages inside of 
 request containers rather than the messages themselves."""
 
 class GameForm(messages.Message):
@@ -79,7 +80,8 @@ class NewGameForm(messages.Message):
 	user_name = messages.StringField(1, required=True)
 	first_random_number = messages.IntegerField(2, required=True)
 	second_random_number = messages.IntegerField(3, required=True)
-	streak = messages.IntegerField(4, default=0)
+	third_random_number = messages.IntegerField(4, required=True)
+	streak = messages.IntegerField(5, default=0)
 
 class MakeMoveForm(messages.Message):
 	# Make your guess in an existing game
