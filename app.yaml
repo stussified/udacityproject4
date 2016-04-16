@@ -1,0 +1,22 @@
+application: udacity-game-project
+version: 1
+runtime: python27
+api_version: 1
+threadsafe: yes
+
+handlers:
+- url: /_ah/spi/.*
+  script: api.api
+
+- url: /tasks/cache_average_attempts
+  script: main.app
+
+- url: /crons/send_reminder
+  script: main.application
+
+libraries:
+- name: webapp2
+  version: "2.5.2"
+
+- name: endpoints
+  version: latest
