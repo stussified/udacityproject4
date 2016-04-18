@@ -8,11 +8,11 @@ handlers:
 - url: /_ah/spi/.*
   script: api.api
 
-- url: /tasks/cache_average_attempts
+- url: /tasks/get_longest_streak
   script: main.app
 
 - url: /crons/send_reminder
-  script: main.application
+  script: main.app
 
 libraries:
 - name: webapp2

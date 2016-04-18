@@ -33,5 +33,5 @@ class UpdateMaxStreak(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
 	('/crons/send_reminder', SendReminderEmail),
-	('tasks/get_longest_streak', UpdateMaxStreak),
+	('/tasks/get_longest_streak', UpdateMaxStreak),
 	], debug=True)
