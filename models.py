@@ -54,6 +54,11 @@ class Game(ndb.Model):
 		score = Score(user=self.user, date=datetime.today(), streak=self.streak)
 		score.put()
 
+	def user_games(self):
+		form = UserGame()
+		form.user_name = self.user.get().name
+		form.urlsafe_key = self.key.urlsafe()
+		return form
 
 class Score(ndb.Model):
 	# Score object
@@ -102,6 +107,14 @@ class ScoreForms(messages.Message):
 class StringMessage(messages.Message):
 	# Not sure what this is used for, but seems like it's for sending the player a message?
 	message = messages.StringField(1, required=True)
+
+class UserGame(messages.Message):
+	# get current user games
+	user_name = messages.StringField(1, required=True)
+	urlsafe_key = messages.StringField(2, required=True)
+
+class UserGames(messages.Message):
+	items = messages.MessageField(UserGame, 1, repeated=True)
 
 
 

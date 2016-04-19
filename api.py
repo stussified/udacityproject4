@@ -5,7 +5,7 @@ from protorpc import remote, messages
 from google.appengine.api import memcache, taskqueue
 
 from models import User, Game, Score
-from models import GameForm, NewGameForm, MakeMoveForm, ScoreForms, StringMessage
+from models import GameForm, NewGameForm, MakeMoveForm, ScoreForms, StringMessage, UserGames
 from utils import get_by_urlsafe # this is an external py file from the project.  emulate it.
 import random
 
@@ -21,6 +21,8 @@ MAKE_MOVE_REQUEST = endpoints.ResourceContainer(MakeMoveForm,
 												urlsafe_game_key=messages.StringField(1),)
 USER_REQUEST = endpoints.ResourceContainer(user_name = messages.StringField(1),
 											email=messages.StringField(2))
+
+USER_GAMES_REQUEST = endpoints.ResourceContainer(user_name = messages.StringField(1),)
 
 # I think this instantiates this variable hence the value 'CURRENT STREAK'
 MEMCACHE_LONGEST_STREAK = 'LONGEST STREAK'
@@ -148,6 +150,25 @@ class BetweenTheSheets(remote.Service):
 	def get_longest_streak(self, request):
 	 	# Get the cached value of the current streak
 	 	return StringMessage(message=memcache.get(MEMCACHE_LONGEST_STREAK) or '')
+
+	
+	@endpoints.method(request_message=USER_GAMES_REQUEST,
+		response_message=UserGames, 
+		path='games/get_user_games', 
+		name='get_user_games', 
+		http_method='GET')
+	
+	def get_user_games(self, request):
+		user = User.query(User.name == request.user_name).get()
+		if not user:
+			raise endpoints.NotFoundException(
+				'A user with that name does not exist')
+		games = Game.query(Game.user == user.key and Game.game_over == True)
+		return UserGames(items=[game.user_games() for game in games])
+
+		# games = Game.query(Game.user == user.key)
+		# # games = games.filter('game_over =', False)
+		# return UserGames
 
 
 	@staticmethod 
