@@ -14,6 +14,7 @@ import random
 
 NEW_GAME_REQUEST = endpoints.ResourceContainer(NewGameForm)
 
+DELETE_GAME_REQUEST = endpoints.ResourceContainer(urlsafe_game_key=messages.StringField(1),) 
 #I think there's a comma at the end because the function that uses it has additional fields to add.
 GET_GAME_REQUEST = endpoints.ResourceContainer(urlsafe_game_key=messages.StringField(1),) 
 
@@ -66,6 +67,24 @@ class BetweenTheSheets(remote.Service):
 		# Can be performed out of sequence.
 		taskqueue.add(url='/tasks/get_longest_streak')
 		return game.to_form('Good luck playing Between The Sheets!')
+
+	@endpoints.method(
+		request_message=DELETE_GAME_REQUEST,
+		response_message=StringMessage, 
+		path='game/{urlsafe_game_key}',
+		name='cancel_game', 
+		http_method='DELETE')
+
+	def cancel_game(self, request):
+		game = get_by_urlsafe(request.urlsafe_game_key, Game)
+		print game
+		if game and game.game_over == False:
+			game.key.delete()
+			return StringMessage(message = 'Game deleted.')
+		elif game and game.game_over == True:
+			raise endpoints.NotFoundException("Can't delete completed games!")
+		else:
+			raise endpoints.NotFoundException('Game not found!')
 
 	@endpoints.method(
 		request_message=GET_GAME_REQUEST,
