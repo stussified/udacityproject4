@@ -5,7 +5,7 @@ from protorpc import remote, messages
 from google.appengine.api import memcache, taskqueue
 
 from models import User, Game, Score
-from models import GameForm, NewGameForm, MakeMoveForm, ScoreForms, StringMessage, UserGames
+from models import GameForm, NewGameForm, MakeMoveForm, ScoreForms, StringMessage, UserGames, HighScores
 from utils import get_by_urlsafe # this is an external py file from the project.  emulate it.
 import random
 
@@ -24,6 +24,8 @@ USER_REQUEST = endpoints.ResourceContainer(user_name = messages.StringField(1),
 											email=messages.StringField(2))
 
 USER_GAMES_REQUEST = endpoints.ResourceContainer(user_name = messages.StringField(1),)
+
+HIGH_SCORES_REQUEST = endpoints.ResourceContainer(number_of_results = messages.IntegerField(1, default=20),)
 
 # I think this instantiates this variable hence the value 'CURRENT STREAK'
 MEMCACHE_LONGEST_STREAK = 'LONGEST STREAK'
@@ -147,6 +149,16 @@ class BetweenTheSheets(remote.Service):
 		# returns streak
 		return ScoreForms(items=[score.to_form() for score in Score.query()])
 
+	@endpoints.method(request_message = HIGH_SCORES_REQUEST,
+		response_message = HighScores,
+		path='games/get_high_scores', 
+		name='get_high_scores', 
+		http_method='GET')
+
+	def get_high_scores(self, request):
+		scores = Score.query().order(-Score.streak).fetch(request.number_of_results)
+		return HighScores(items=[score.high_scores() for score in scores])
+
 	@endpoints.method(request_message=USER_REQUEST, 
 		response_message=ScoreForms,
 	 	path='scores/user/{user_name}',
@@ -185,9 +197,6 @@ class BetweenTheSheets(remote.Service):
 		games = Game.query(Game.user == user.key and Game.game_over == True)
 		return UserGames(items=[game.user_games() for game in games])
 
-		# games = Game.query(Game.user == user.key)
-		# # games = games.filter('game_over =', False)
-		# return UserGames
 
 
 	@staticmethod 

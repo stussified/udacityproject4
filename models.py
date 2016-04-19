@@ -69,6 +69,9 @@ class Score(ndb.Model):
 	def to_form(self):
 		return ScoreForm(user_name=self.user.get().name, streak=self.streak, date=str(self.date))
 
+	def high_scores(self):
+		return HighScore(user_name=self.user.get().name, streak=self.streak)
+
 """Here are the forms section - they're the protorpc fields that API endpoints will be using to send and 
 recieve info.  The reason this exists is because Google App Engine requires info sent messages inside of 
 request containers rather than the messages themselves."""
@@ -116,7 +119,12 @@ class UserGame(messages.Message):
 class UserGames(messages.Message):
 	items = messages.MessageField(UserGame, 1, repeated=True)
 
+class HighScore(messages.Message):
+	user_name = messages.StringField(1, required=True)
+	streak = messages.IntegerField(2, required=True)
 
+class HighScores(messages.Message):
+	items = messages.MessageField(HighScore, 1, repeated=True)
 
 
 
