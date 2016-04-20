@@ -5,7 +5,7 @@ from protorpc import remote, messages
 from google.appengine.api import memcache, taskqueue
 
 from models import User, Game, Score
-from models import GameForm, NewGameForm, MakeMoveForm, ScoreForms, StringMessage, UserGames, HighScores
+from models import GameForm, NewGameForm, MakeMoveForm, ScoreForms, StringMessage, UserGames, HighScores, Ranking
 from utils import get_by_urlsafe # this is an external py file from the project.  emulate it.
 import random
 
@@ -26,6 +26,8 @@ USER_REQUEST = endpoints.ResourceContainer(user_name = messages.StringField(1),
 USER_GAMES_REQUEST = endpoints.ResourceContainer(user_name = messages.StringField(1),)
 
 HIGH_SCORES_REQUEST = endpoints.ResourceContainer(number_of_results = messages.IntegerField(1, default=20),)
+
+USER_RANKING_REQUEST = endpoints.ResourceContainer(user_name = messages.StringField(1),)
 
 # I think this instantiates this variable hence the value 'CURRENT STREAK'
 MEMCACHE_LONGEST_STREAK = 'LONGEST STREAK'
@@ -159,6 +161,18 @@ class BetweenTheSheets(remote.Service):
 		scores = Score.query().order(-Score.streak).fetch(request.number_of_results)
 		return HighScores(items=[score.high_scores() for score in scores])
 
+	@endpoints.method(request_message= USER_RANKING_REQUEST,
+		response_message=Ranking,
+		path='games/get_user_rankings',
+		name='get_user_rankings', 
+		http_method='GET'
+		)
+
+	def get_user_rankings(self, request):
+		max_streak = Score.query().order(-Score.streak).get()
+		print max_streak
+		return max_streak.ranking()
+
 	@endpoints.method(request_message=USER_REQUEST, 
 		response_message=ScoreForms,
 	 	path='scores/user/{user_name}',
@@ -181,7 +195,6 @@ class BetweenTheSheets(remote.Service):
 	def get_longest_streak(self, request):
 	 	# Get the cached value of the current streak
 	 	return StringMessage(message=memcache.get(MEMCACHE_LONGEST_STREAK) or '')
-
 	
 	@endpoints.method(request_message=USER_GAMES_REQUEST,
 		response_message=UserGames, 
@@ -197,8 +210,6 @@ class BetweenTheSheets(remote.Service):
 		games = Game.query(Game.user == user.key and Game.game_over == True)
 		return UserGames(items=[game.user_games() for game in games])
 
-
-
 	@staticmethod 
 	def _cache_longest_streak():
 	 	# Populates memcache with the longest streak
@@ -207,15 +218,5 @@ class BetweenTheSheets(remote.Service):
 	 		game_list = [game.streak for game in games]
 	 		longest_streak_game = max(game_list)
 	 		memcache.set(MEMCACHE_LONGEST_STREAK, 'The longest streak is {} correct guess(es).'.format(longest_streak_game))
-
-
-
-
-
-
-
-
-
-
 
 api = endpoints.api_server([BetweenTheSheets])

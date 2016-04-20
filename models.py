@@ -72,6 +72,9 @@ class Score(ndb.Model):
 	def high_scores(self):
 		return HighScore(user_name=self.user.get().name, streak=self.streak)
 
+	def ranking(self):
+		return Ranking(user_name=self.user.get().name, max_streak=self.streak)
+
 """Here are the forms section - they're the protorpc fields that API endpoints will be using to send and 
 recieve info.  The reason this exists is because Google App Engine requires info sent messages inside of 
 request containers rather than the messages themselves."""
@@ -125,6 +128,11 @@ class HighScore(messages.Message):
 
 class HighScores(messages.Message):
 	items = messages.MessageField(HighScore, 1, repeated=True)
+
+class Ranking(messages.Message):
+	user_name = messages.StringField(1, required=True)
+	max_streak = messages.IntegerField(2, required=True)
+
 
 
 

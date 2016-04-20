@@ -5,21 +5,26 @@ import logging
 import webapp2
 from google.appengine.api import mail, app_identity
 from api import BetweenTheSheets
-from models import User
+from models import User, Game
 
 class SendReminderEmail(webapp2.RequestHandler):
 	# send an email reminder to users about games using cron
 	def get(self):
 		app_id = app_identity.get_application_id()
-		users = User.query(User.email != None)
-		for user in users:
-			subject = 'Keep the streak alive!'
-			body = "Hello {}, keep on playing Between the sheets!".format(user.name)
-			# This will send test emails
-			mail.send_mail('noreply@{}.appspotmail.com'.format(app_id),
-				user.email,
-				subject,
-				body)
+
+
+		games = Game.query(Game.game_over == False).fetch()
+		print games
+		for open_game in games:
+			users = User.query(User.email != None and open_game.user == User.key)
+			for user in users:
+				subject = 'Keep the streak alive!'
+				body = "Hello {}, keep on playing Between the sheets!".format(user.name)
+				# This will send test emails
+				mail.send_mail('noreply@{}.appspotmail.com'.format(app_id),
+					user.email,
+					subject,
+					body)
 
 
 
