@@ -4,8 +4,8 @@ import endpoints
 from protorpc import remote, messages
 from google.appengine.api import memcache, taskqueue
 
-from models import User, Game, Score
-from models import GameForm, NewGameForm, MakeMoveForm, ScoreForms, StringMessage, UserGames, HighScores, Ranking
+from models import User, Game, Score, GameHistory
+from models import GameForm, NewGameForm, MakeMoveForm, ScoreForms, StringMessage, UserGames, HighScores, Ranking, GameHistories
 from utils import get_by_urlsafe # this is an external py file from the project.  emulate it.
 import random
 
@@ -28,6 +28,8 @@ USER_GAMES_REQUEST = endpoints.ResourceContainer(user_name = messages.StringFiel
 HIGH_SCORES_REQUEST = endpoints.ResourceContainer(number_of_results = messages.IntegerField(1, default=20),)
 
 USER_RANKING_REQUEST = endpoints.ResourceContainer(user_name = messages.StringField(1),)
+
+GAME_HISTORY_REQUEST = endpoints.ResourceContainer(urlsafe_game_key = messages.StringField(1),)
 
 # I think this instantiates this variable hence the value 'CURRENT STREAK'
 MEMCACHE_LONGEST_STREAK = 'LONGEST STREAK'
@@ -65,7 +67,7 @@ class BetweenTheSheets(remote.Service):
 		if not user:
 			raise endpoints.NotFoundException(
 				"Username doesn't exist")
-		game = Game.new_game(user.key, request.streak, request.max_guess, request.first_random_number, request.second_random_number, request.third_random_number) 
+		game = Game.new_game(user.key, request.streak, request.max_guess) 
 
 		# Use task queue to update the average streak.
 		# Can be performed out of sequence.
@@ -122,6 +124,8 @@ class BetweenTheSheets(remote.Service):
 		second_random_number = sorting_list[1]
 		third_random_number = game.third_random_number
 		max_guess = game.max_guess
+		turn = game.streak
+
 
 		if first_random_number == second_random_number or third_random_number == second_random_number or third_random_number == first_random_number: # tie is auto lose
 			msg = 'tie'
@@ -131,16 +135,33 @@ class BetweenTheSheets(remote.Service):
 			msg = 'outside'
 		
 		if request.guess != msg or msg == 'tie':
+			alert = "Sorry, you lost!"
 			game.end_game()
-			return game.to_form("Sorry, you lost!")
 
 		elif request.guess == msg:
+			alert = "You're correct!"
 			game.first_random_number = random.choice(range(1, max_guess+1))  # max + 1 because of computer counting.
 			game.second_random_number = random.choice(range(1, max_guess+1))
 			game.third_random_number =random.choice(range(1, max_guess+1))
 			game.streak += 1
 			game.put()
-			return game.to_form("You're correct!")
+
+		history = GameHistory.new_record(game.key, request.urlsafe_game_key,request.guess, turn, alert)
+		history.put()
+
+		return game.to_form(alert)
+
+
+	@endpoints.method(
+		request_message=GAME_HISTORY_REQUEST,
+		response_message=GameHistories,
+		path='games/gamehistory', 
+		name='get_game_history',
+		http_method='GET')
+
+	def get_game_history(self, request):
+		histories = GameHistory.query(GameHistory.game_url_safekey == request.urlsafe_game_key).order(GameHistory.turn).fetch()
+		return GameHistories(items=[history.to_form() for history in histories])
 
 	@endpoints.method(response_message=ScoreForms,
 					path='scores', 

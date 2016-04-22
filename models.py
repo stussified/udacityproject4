@@ -13,6 +13,33 @@ class User(ndb.Model):
 	name = ndb.StringProperty(required=True)
 	email = ndb.StringProperty()
 
+class GameHistory(ndb.Model):
+	game_key = ndb.KeyProperty(required=True, kind='Game')
+	game_url_safekey = ndb.StringProperty(required=True)
+	guess = ndb.StringProperty(required=True)
+	turn = ndb.IntegerProperty(required=True, default=0)
+	game_message = ndb.StringProperty(required=True)
+
+	@classmethod
+	def new_record(cls, game_key,game_url_safekey, guess, turn, game_message):
+		record = GameHistory(
+			game_key = game_key, 
+			game_url_safekey = game_url_safekey,
+			guess = guess,
+			turn = turn,
+			game_message = game_message)
+
+		record.put()
+		return record
+
+	def to_form(self):
+
+		form = HistoryForm()
+		form.turn = self.turn
+		form.game_message = self.game_message
+		form.guess = self.guess
+		return form
+
 class Game(ndb.Model):
 	# Game object
 	user = ndb.KeyProperty(required=True, kind='User')
@@ -25,7 +52,7 @@ class Game(ndb.Model):
 	# Class methods require class to be passed as the first object. 
 	# Means you can reuse them depending on the value inside of the class instantiating this function.
 	@classmethod 
-	def new_game(cls, user, streak, max_guess, first_random_number, second_random_number, third_random_number):
+	def new_game(cls, user, streak, max_guess):
 		# Create a new game.  The order of the 2 numbers don't matter, so we're not going to worry about it.
 		game = Game(user=user, 
 					max_guess = max_guess,
@@ -91,10 +118,7 @@ class NewGameForm(messages.Message):
 	# Used to create a new game
 	user_name = messages.StringField(1, required=True)
 	max_guess = messages.IntegerField(2, required=True)
-	first_random_number = messages.IntegerField(3, required=True)
-	second_random_number = messages.IntegerField(4, required=True)
-	third_random_number = messages.IntegerField(5, required=True)
-	streak = messages.IntegerField(6, default=0)
+	streak = messages.IntegerField(3, default=0)
 
 class MakeMoveForm(messages.Message):
 	# Make your guess in an existing game
@@ -109,6 +133,14 @@ class ScoreForm(messages.Message):
 class ScoreForms(messages.Message):
 	# Form used to send multiple stats
 	items = messages.MessageField(ScoreForm, 1, repeated=True)
+
+class HistoryForm(messages.Message):
+	turn = messages.IntegerField(1, required=True)
+	game_message = messages.StringField(2, required=True)
+	guess = messages.StringField(3, required=True)
+
+class GameHistories(messages.Message):
+	items = messages.MessageField(HistoryForm, 1, repeated=True)
 
 class StringMessage(messages.Message):
 	# Not sure what this is used for, but seems like it's for sending the player a message?
