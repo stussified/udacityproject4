@@ -1,0 +1,7 @@
+I added a few new models as well as class to this project in order to accommodate the game that I wanted to create.  The new class that was added was the GameHistory class which captures every move that was made by the user.  
+
+I originally intended to have all of it aggregated at the Game class, but unfortunately it felt too messy especially since the game key is such a vital part of the identification of the game, I was not sure that holding all that data in another column of the same table would be a good idea since Google Datastore generates new keys for every row.
+
+Some of the struggles that I faced when creating this game was thinking of a clever game that would work in a programmatic fashion.  Initially I wanted to make a dice game but it felt like it would be far too complicated in terms of logic as well as data storage.  I think one thing that would have helped would be having a single game that would be more difficult to make where the logic was already thought of.  For example, if you were to make the end project ONLY hangman (which has relatively simple logic in my head) rather than allowing us to select games like Solitaire (which seems incredibly complicated).
+
+Regardless I think this lesson was really useful in comparison to lesson 3 which I believe was somewhat of a mess.  In addition, while I understand that Google App Engine is constantly developing, having to launch the browser insecurely seems like a hack that some people might find challenging to handle and might deter me from using GAE in the future.

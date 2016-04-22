@@ -67,7 +67,7 @@ class BetweenTheSheets(remote.Service):
 		if not user:
 			raise endpoints.NotFoundException(
 				"Username doesn't exist")
-		game = Game.new_game(user.key, request.streak, request.max_guess) 
+		game = Game.new_game(user.key,request.max_guess) 
 
 		# Use task queue to update the average streak.
 		# Can be performed out of sequence.
@@ -88,7 +88,7 @@ class BetweenTheSheets(remote.Service):
 			game.key.delete()
 			return StringMessage(message = 'Game deleted.')
 		elif game and game.game_over == True:
-			raise endpoints.NotFoundException("Can't delete completed games!")
+			raise endpoints.ConflictException("Can't delete completed games!")
 		else:
 			raise endpoints.NotFoundException('Game not found!')
 
@@ -115,6 +115,8 @@ class BetweenTheSheets(remote.Service):
 						http_method='PUT')
 	def make_move(self, request):
 		game = get_by_urlsafe(request.urlsafe_game_key, Game)
+		if request.guess != 'inside' or request.guess != 'outside':
+			raise endpoints.BadRequestException('Must guess inside or outside')
 		if game.game_over:
 			return game.to_form('Game already over!')
 		print request
@@ -170,7 +172,7 @@ class BetweenTheSheets(remote.Service):
 	
 	def get_scores(self, request):
 		# returns streak
-		return ScoreForms(items=[score.to_form() for score in Score.query()])
+		return ScoreForms(items=[score.to_form() for score in Score.query().order(-Score.date)])
 
 	@endpoints.method(request_message = HIGH_SCORES_REQUEST,
 		response_message = HighScores,
@@ -206,7 +208,7 @@ class BetweenTheSheets(remote.Service):
 	 	if not user:
 	 		raise endpoints.NotFoundException(
 	 			'A user with that name does not exist')
- 		scores = Score.query(Score.user == user.key)
+ 		scores = Score.query(Score.user == user.key).order(-Score.streak)
  		return ScoreForms(items=[score.to_form() for score in scores])
 
 	@endpoints.method(response_message=StringMessage,

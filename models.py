@@ -52,7 +52,7 @@ class Game(ndb.Model):
 	# Class methods require class to be passed as the first object. 
 	# Means you can reuse them depending on the value inside of the class instantiating this function.
 	@classmethod 
-	def new_game(cls, user, streak, max_guess):
+	def new_game(cls, user, max_guess):
 		# Create a new game.  The order of the 2 numbers don't matter, so we're not going to worry about it.
 		game = Game(user=user, 
 					max_guess = max_guess,
@@ -118,7 +118,6 @@ class NewGameForm(messages.Message):
 	# Used to create a new game
 	user_name = messages.StringField(1, required=True)
 	max_guess = messages.IntegerField(2, required=True)
-	streak = messages.IntegerField(3, default=0)
 
 class MakeMoveForm(messages.Message):
 	# Make your guess in an existing game

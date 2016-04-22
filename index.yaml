@@ -29,5 +29,11 @@ indexes:
 - kind: Score
   properties:
   - name: user
+  - name: date
+    direction: desc
+
+- kind: Score
+  properties:
+  - name: user
   - name: streak
     direction: desc
