@@ -20,7 +20,7 @@ In this version, the player will be guessing the value between 2 randomly genera
 * utils.py: Helper function for retrieving ndb.Models by urlsafe Key string.
 
 
-Here is a breakdown of each endpoint:
+### Here is a breakdown of each endpoint:
 
 **cancel_game**
 * Path: 'game/{urlsafe_game_key}'
@@ -90,16 +90,16 @@ Here is a breakdown of each endpoint:
 
 ##Models:
 **User**
-Stores unique usernames and email addresses.
+* Stores unique usernames and email addresses.
 
 **Game**
-Stores information related to the status of the game such as whether or not it's over (game_over), the numbers that can be guessed (max_guess, first_random_number, second_random_number, third_random_number) and the current score of the game (streak).  Has Kind relationship with 'User' model.
+* Stores information related to the status of the game such as whether or not it's over (game_over), the numbers that can be guessed (max_guess, first_random_number, second_random_number, third_random_number) and the current score of the game (streak).  Has Kind relationship with 'User' model.
 
 **Score**
-Stores the user's score (streak) and date. Has Kind relationship with 'User' model.
+* Stores the user's score (streak) and date. Has Kind relationship with 'User' model.
 
 **Game History**
-Stores every guess and the response from the game for each turn. Has Kind relationship with the 'Game' model.
+* Stores every guess and the response from the game for each turn. Has Kind relationship with the 'Game' model.
 
 
 ## Forms Included:
