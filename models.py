@@ -168,6 +168,9 @@ class Ranking(messages.Message):
     user_name = messages.StringField(1, required=True)
     max_streak = messages.IntegerField(2, required=True)
 
+class Rankings(messages.Message):
+    items = messages.MessageField(Ranking, 1, repeated=True)
+
 
 
 

@@ -2,7 +2,10 @@
 
 Between the sheets is traditionally a card game where a 2 cards are initially dealt, and then guessing on whether the 3rd card will be inside the range of rank of the first 2 cards, outside the rank of of the first 2 cards or a tie.
 
-In this version, the player will be guessing the value between 2 randomly generated numbers between 0 and and a value that they define (I would recommend 10, but the user is required to declare the maximum) and the user will be asked guess the 3rd randomly generated number will be inside or outside.  In the event of the first 2 randomly generated numbers being the same, the user will automatically lose.  The score will be counted on how many consecutive rounds the user can get correctly (called a streak).  Each correct answer will increase the value of the streak.  Getting an incorrect answer will immediately end the game.
+In this version, the player will be guessing the value between 2 randomly generated numbers between 0 and and a value that they define (I would recommend 10, but the user is required to declare the maximum) and the user will be asked guess the 3rd randomly generated number will be inside or outside.  In the event of the first 2 randomly generated numbers being the same, the user will automatically lose.  
+
+## Scoring:
+The score will be counted on how many consecutive rounds the user can get correctly (called a streak).  Each consecutive correct answer will increase the value of the streak.  For example, if you correctly guess the outcome of the first game, you will be awarded a win and your streak will be 1.  If you correctly guess the second value, you will get another win and your streak will be 2.  However, if you get the second value incorrect, your game will be over and your streak will end at 1.  Getting an incorrect answer or if 2 of the randomly generated numbers are the same, the game will immediately end.
 
 ##How to run the app:
 
@@ -140,4 +143,7 @@ In this version, the player will be guessing the value between 2 randomly genera
 * Form for multiple HighScore objects.
 
 **Ranking**
-* Form for holding the maximum score for a user_name.
+* Form holding the score of a single user's game in the get_user_rankings method.
+
+**Rankings** 
+* Form for multiple Ranking objects.

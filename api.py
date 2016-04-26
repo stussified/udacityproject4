@@ -6,7 +6,7 @@ from google.appengine.api import memcache, taskqueue
 
 from models import User, Game, Score, GameHistory
 from models import GameForm, NewGameForm, MakeMoveForm, ScoreForms, StringMessage, UserGames, \
-    HighScores, Ranking, GameHistories
+    HighScores, Rankings, GameHistories
 from utils import get_by_urlsafe # this is an external py file from the project.  emulate it.
 import random
 
@@ -30,8 +30,6 @@ USER_GAMES_REQUEST = endpoints.ResourceContainer(user_name=messages.StringField(
 
 HIGH_SCORES_REQUEST = endpoints.ResourceContainer(number_of_results=messages.IntegerField(
     1, default=20),)
-
-USER_RANKING_REQUEST = endpoints.ResourceContainer(user_name=messages.StringField(1),)
 
 GAME_HISTORY_REQUEST = endpoints.ResourceContainer(urlsafe_game_key=messages.StringField(1),)
 
@@ -121,7 +119,7 @@ class BetweenTheSheets(remote.Service):
         in order to function.
         """
         game = get_by_urlsafe(request.urlsafe_game_key, Game)
-        if game.game_over != True:
+        if game.game_over is False:
             return game.to_form('Time to make a move!')
         if game.game_over == True:
             return game.to_form('This game is already over!')
@@ -134,7 +132,7 @@ class BetweenTheSheets(remote.Service):
                       name='make_move',
                       http_method='PUT')
     def make_move(self, request):
-        """ 
+        """
         Make a move.  This function requires a url safe game key and allows the user
         to make a guess as to whether the 3rd generated number is inside or outside
         the 1st and 2nd generated number.  The input for this MUST be either 'inside'
@@ -228,8 +226,7 @@ class BetweenTheSheets(remote.Service):
         scores = Score.query().order(-Score.streak).fetch(request.number_of_results)
         return HighScores(items=[score.high_scores() for score in scores])
 
-    @endpoints.method(request_message=USER_RANKING_REQUEST,
-                      response_message=Ranking,
+    @endpoints.method(response_message=Rankings,
                       path='games/get_user_rankings',
                       name='get_user_rankings',
                       http_method='GET')
@@ -238,8 +235,10 @@ class BetweenTheSheets(remote.Service):
         """
         Shows a leaderboard of all usernames based on streak (highest streak at the top).
         """
-        max_streak = Score.query().order(-Score.streak).get()
-        return max_streak.ranking()
+        users = User.query().fetch()
+        max_streaks = [Score.query(user.key == Score.user).
+                       order(-Score.streak).get() for user in users]
+        return Rankings(items=[max_streak.ranking() for max_streak in max_streaks])
 
     @endpoints.method(request_message=USER_REQUEST,
                       response_message=ScoreForms,
@@ -287,7 +286,7 @@ class BetweenTheSheets(remote.Service):
         return UserGames(items=[game.user_games() for game in games])
     @staticmethod
     def _cache_longest_streak():
-        """ 
+        """
         This records the longest streak out of all users in completed games
         and stores the value in memcache.
         """

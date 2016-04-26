@@ -2,6 +2,15 @@ I added a few new models as well as class to this project in order to accommodat
 
 I originally intended to have all of it aggregated at the Game class, but unfortunately it felt too messy especially since the game key is such a vital part of the identification of the game, I was not sure that holding all that data in another column of the same table would be a good idea since Google Datastore generates new keys for every row.  To answer the question of whether GameHistory is it's own class, I believe that it is because the the data that is recorded is conceptually different from Score and Game and also I don't believe that there is any harm in introducing a new class.
 
+Also, for the SendReminderEmail function, I made the choice to find distinct open games by users first rather than users than distinct games because I was not entirely sure how do get distinct values with Google App Engine's Datastore.  For example in MySQL, I would have done something like 
+
+'SELECT * FROM Game
+LEFT JOIN User on User.Key = Game.User
+WHERE User.email IS NOT NULL and Game.game_over = False
+GROUP BY User.Key'
+
+to get a single user key were any amount of open games were found.  However, with Google App Engine, I wasn't entirely sure how to do this as eloquently.
+
 The tradeoffs and struggles that I had with this project was primarily with the lack of planning and not entirely understanding how to correctly model the concept of a 'game'.   As seen above, one of the code critiques was the introduction of a new class called GameHistory, which stores the historical information of an individual game.  Is there a reason that I should or should not have introduced it?  I cannot explain that in a technical level as to why.
 
 Another struggle that I had in this project was the correctly quantifying the level of detail that would be needed to be recorded at each level.  I approached the game in a function-by-function way and completed the game and then planned the additional features as required in task 3.  Also, I did not think of handling exceptions until most of the project was complete which lead to my failed first submission.
